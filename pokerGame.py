@@ -1,7 +1,6 @@
 import random
 import pokerHand
 import pokerPlayer
-import handHistory
 
 class pokerGame:
 
@@ -33,11 +32,11 @@ def main():
     
     BBsize = game.startingChips/100
     
-    dealerPosition = random.randint(0,len(game.players)-1)
+    BBPosition = random.randint(0,len(game.players)-1)
 
     while(len(game.players) > 3):
         for hand in range(game.handsPerLevel):
-            hand = pokerHand(game.deck, game.players, dealerPosition, BBsize, False)
+            hand = pokerHand(game.deck, game.players, BBPosition, BBsize, False)
             hand.playHand()
         BBsize *= 2
         

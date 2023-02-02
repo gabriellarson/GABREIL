@@ -13,6 +13,15 @@ class pokerHand:
     def getCommunityCards(self):
         return self.communityCards
 
+    def checkLegalAction(self, action, player): #gamestate = [self.players, self.communityCards, self.BBsize, self.pot]
+        if(action[0] == "fold"):
+            return True
+        elif(action[0] == "raise"):
+            if(action[1] > player.getChips()):
+                return False
+            
+        return False
+
     def dealPre(self):
         for player in self.players:
             player.setHand(self.deck.pop(), self.deck.pop())
@@ -48,18 +57,17 @@ class pokerHand:
         gamestate = [self.players, self.communityCards, self.BBsize, self.pot]
 
         for player in self.players:
-            action = player.takeAction(gamestate)
-            if(action == "fold"):
+
+            legalAction = False
+            while(not legalAction):
+                action = player.takeAction(gamestate) #action = [fold / raise][chips];    [raise][0] is same as checking or calling, 
+                legalAction = self.checkLegalAction(action, player)
+
+            if(action[0] == "fold"):
                 self.players.remove(player)
-            elif(action == "call"):
-                player.deltaChips(-self.BBsize)
-                self.pot += self.BBsize
-            elif(action.startswith("raise")):
-                player.deltaChips(-2*self.BBsize)
-                self.pot += 2*self.BBsize
-            elif(action == "allin"):
-                self.pot += player.getChips()
-                player.deltaChips(-player.getChips())
+            elif(action[0] == "raise"):
+                player.deltaChips(-action[1])
+                self.pot += action[1]
             else:
                 print("Error: invalid action")
 
