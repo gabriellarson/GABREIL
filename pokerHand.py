@@ -19,6 +19,9 @@ class pokerHand:
         elif(action[0] == "raise"):
             if(action[1] > player.getChips()):
                 return False
+            if(self.pre):
+                if(action[1] < self.BBsize):
+                    return False
             
         return False
 

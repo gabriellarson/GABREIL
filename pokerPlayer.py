@@ -3,6 +3,7 @@ class pokerPlayer:
         self.name = name
         self.chips = None
         self.hand = [None,None]
+        self.currentAction = [None]
         self.previousAction = [None]
         
     def deltaChips(self, chipsDelta):
@@ -26,12 +27,15 @@ class pokerPlayer:
 
     def takeAction(self, gamestate):
         action = ["fold", 0]
-        self.appendAction(action)
         return action
 
     def getPreviousAction(self):
         return self.previousAction
 
-    def appendAction(self, action):
-        self.previousAction.append(action)
+    def getCurrentAction(self):
+        return self.currentAction
+
+    def appendCurrentActionToPrevious(self):
+        self.previousAction.append(self.currentAction)
+        self.currentAction = [None]
     
