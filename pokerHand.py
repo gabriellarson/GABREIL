@@ -1,3 +1,5 @@
+import numpy as np
+
 class pokerHand:
     
     def __init__(self, deck, players, BBsize, logging):
