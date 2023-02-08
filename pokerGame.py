@@ -1,6 +1,6 @@
 import random
-import pokerHand
-import pokerPlayer
+from pokerHand import pokerHand
+from pokerPlayer import pokerPlayer
 
 class pokerGame:
 
@@ -28,15 +28,13 @@ def main():
     game = pokerGame(list, 100, 20)
 
     for player in game.players:
-        player.setChips(game.startingChips)
+        player.chips = game.startingChips
     
     BBsize = game.startingChips/100
     
-    BBposition = random.randint(0,len(game.players)-1)
-
     while(len(game.players) > 3):
-        for hand in range(game.handsPerLevel):
-            hand = pokerHand(game.deck, game.players, BBposition, BBsize, False)
+        for hands in range(game.handsPerLevel):
+            hand = pokerHand(game.deck, game.players, BBsize, False)
             hand.playHand()
         BBsize *= 2
         

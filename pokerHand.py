@@ -1,13 +1,15 @@
 import numpy as np
+import random
 
 class pokerHand:
     
     def __init__(self, deck, players, BBsize, logging):
-        self.deck = deck.shuffle()
+        self.deck = random.sample(deck, len(deck))
+        print(self.deck)
         self.players = players
         self.BBsize = BBsize
         self.logging = logging
-        self.communityCards = [None, None, None, None, None]
+        self.communityCards = []
         self.handEnded = False
         self.pre = True
         self.pot = 0
@@ -15,66 +17,75 @@ class pokerHand:
     def getCommunityCards(self):
         return self.communityCards
 
-    def checkLegalAction(self, action, player): #gamestate = [self.players, self.communityCards, self.BBsize, self.pot]
-        if(action[0] == "fold"):
-            return True
-        elif(action[0] == "raise"):
-            if(action[1] > player.getChips()):
-                return False
-            if(self.pre):
-                if(action[1] < self.BBsize):
-                    return False
-            
-        return False
-
     def dealPre(self):
         for player in self.players:
-            player.setHand(self.deck.pop(), self.deck.pop())
+            player.hand = [self.deck.pop(), self.deck.pop()]
             print(player.name, player.hand)
 
-    def dealFlop(self):
-        self.communityCards[0] = self.deck.pop()
-        self.communityCards[1] = self.deck.pop()
-        self.communityCards[2] = self.deck.pop()
-
-    def dealTurn(self):
-        self.communityCards[3] = self.deck.pop()
-
-    def dealRiver(self):
-        self.communityCards[4] = self.deck.pop()
-
     def endHand(self):
-        self.players[0].deltaChips(self.pot)
+        self.players[0].chips += self.pot
         print(self.players[0].name, "wins", self.pot, "chips")
 
     def bettingRound(self):
         if self.pre:
-            BB = min(self.BBsize/2, self.players[0].getChips())
+            BB = min(self.BBsize/2, self.players[8].chips)
             self.pot += BB
-            self.players[0].deltaChips(-BB)
-            self.players[0].appendAction("post" + BB)
+            self.players[8].chips -= BB
+            self.players[8].roundAction.append(self.players[8].chips - BB)
 
-            SB = min(self.BBsize, self.players[1].getChips())
+            SB = min(self.BBsize, self.players[7].chips)
             self.pot += SB
-            self.players[1].deltaChips(-SB)
-            self.players[1].appendAction("post" + SB)
+            self.players[7].chips -= SB
+            self.players[7].roundAction.append(self.players[7].chips - SB)
 
-        gamestate = [self.players, self.communityCards, self.BBsize, self.pot]
+        openAction = True
+        while(openAction):
+            for player in self.players:
 
-        for player in self.players:
+                playersPreviousAction = []
+                playersHandAction = []
+                playersRoundAction = []
+                lastRaise = 0
+                for p in self.players:
+                    playersPreviousAction.append(p.previousAction)
+                    playersHandAction.append(p.handAction)
+                    playersRoundAction.append(p.roundAction)
 
-            legalAction = False
-            while(not legalAction):
-                action = player.takeAction(gamestate) #action = [fold / raise][chips];    [raise][0] is same as checking or calling, 
-                legalAction = self.checkLegalAction(action, player)
+                    #print(p.roundAction)
+                    if(p.roundAction[-1] >= 0):
+                        if(p.chips - p.roundAction[-1] > lastRaise):
+                            lastRaise = p.chips - p.roundAction[-1]
 
-            if(action[0] == "fold"):
-                self.players.remove(player)
-            elif(action[0] == "raise"):
-                player.deltaChips(-action[1])
-                self.pot += action[1]
-            else:
-                print("Error: invalid action")
+                ceiling = 0
+                if(self.pre):
+                    ceiling = lastRaise + self.BBsize
+                else:
+                    ceiling = lastRaise * 2
+
+                PlayerActionSpaceMin = -2
+                if(player.chips - lastRaise <= 0):
+                    PlayerActionSpaceMin = -1
+                playerActionSpaceMax = max(0, player.chips - ceiling)
+                playerActionSpace = (PlayerActionSpaceMin, playerActionSpaceMax)#[-2, -1) to call (not always available), [-1, 0) to fold, [0, maxchips] is the number of chips you want to have left after raising
+
+                gamestate = [player.hand, [playersPreviousAction, playersHandAction, playersRoundAction], self.communityCards]
+                action = player.takeAction(gamestate, playerActionSpace)
+
+                if(-2 <= action < -1):
+                    player.roundAction.append(-2)
+                    player.chips -= lastRaise
+                    self.pot += lastRaise
+                elif(-1 <= action < 0):
+                    player.roundAction.append(-1)
+                    self.players.remove(player)
+                elif(0 <= action <= playerActionSpaceMax):
+                    r = player.getChips() - action
+                    player.roundAction.append(r)
+                    player.deltaChips(r)
+                    self.pot += r
+                else:
+                    print("Error: invalid action")
+
 
     def playHand(self):
         if(len(self.players) > 3):
@@ -83,18 +94,18 @@ class pokerHand:
             while(not self.handEnded):
                 self.pre = False
 
-                self.dealFlop()
+                self.communityCards.append(self.deck.pop())
+                self.communityCards.append(self.deck.pop())
+                self.communityCards.append(self.deck.pop())
                 self.bettingRound()
-
                 if(len(self.players) == 1):
                     break
 
-                self.dealTurn()
+                self.communityCards.append(self.deck.pop())
                 self.bettingRound()
-
                 if(len(self.players) == 1):
                     break
 
-                self.dealRiver()
+                self.communityCards.append(self.deck.pop())
                 self.bettingRound()
             self.endHand()
