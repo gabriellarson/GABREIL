@@ -1,5 +1,3 @@
-import numpy as np
-
 class pokerPlayer:
     def __init__(self, name):
         self.name = name
@@ -9,10 +7,8 @@ class pokerPlayer:
         self.handAction = [0]
         self.previousAction = [0]
         
-
     def takeAction(self, gamestate, actionSpace):
-        action = min(actionSpace)
-        return action
+        return -1
 
 
     
