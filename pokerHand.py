@@ -21,8 +21,9 @@ class pokerHand:
             player.hand = [self.deck.pop(), self.deck.pop()]
 
     def showdown(self):
+        print("showdown")
         for player in self.players:
-            print(player.name, player.hand, player.chips)
+            #print(player.name, player.hand, player.chips)
             hand = player.hand + self.communityCards
             hand.sort()
 
@@ -125,9 +126,9 @@ class pokerHand:
         #return winning player
         return max(self.players, key=lambda x: (x.handRank, x.handValue))
 
-    def endHand(self):
-        self.players[0].chips += self.pot
-        print(self.players[0].name, "wins", self.pot, "chips", " with ", self.players[0].hand, " and ", self.communityCards)
+    def endHand(self, winner):
+        winner.chips += self.pot
+        print(winner.name, "wins", self.pot, "chips", " with ", winner.hand, " and ", self.communityCards)
 
     def calls(self, lastRaise, player):
         print(player.name, " calls")
@@ -148,6 +149,7 @@ class pokerHand:
         self.pot += r
 
     def calculatePlayerAction(self, lastRaise, player, playersPreviousAction, playersHandAction, playersRoundAction):
+        print("calulating player action")
         ceiling = 0 #ceiling will be the minimum raise
         if(self.pre):
             ceiling = lastRaise + self.BBsize
@@ -165,6 +167,7 @@ class pokerHand:
         return action, playerActionSpaceMax
     
     def calculatePreviousAction(self):
+        print("calculating previous action")
         playersPreviousAction = []
         playersHandAction = []
         playersRoundAction = []
@@ -180,6 +183,7 @@ class pokerHand:
         return lastRaise, playersPreviousAction, playersHandAction, playersRoundAction
     
     def calculateBlinds(self):
+        print("calculating blinds")
         BB = min(self.BBsize/2, self.players[-1].chips)
         self.pot += BB
         self.players[-1].chips -= BB
@@ -191,32 +195,43 @@ class pokerHand:
         self.players[-2].roundAction.append(self.players[-2].chips - SB)
         return BB, SB
 
+    def playerTurn(self, player):
+        print(player.name, "'s turn")
+        lastRaise, playersPreviousAction, playersHandAction, playersRoundAction = self.calculatePreviousAction()
+        action, playerActionSpaceMax = self.calculatePlayerAction(lastRaise, player, playersPreviousAction, playersHandAction, playersRoundAction)
+
+        if(-2 <= action < -1):
+            self.calls(lastRaise, player)
+            self.actionCount -= 1
+        elif(-1 <= action < 0):
+            self.folds(player)
+            self.actionCount -= 1
+        elif(0 <= action <= playerActionSpaceMax):
+            self.raises(action, player)
+            self.actionCount = len(self.players)
+        else:
+            print("Error: invalid action")
+            print(action)
+
     def bettingRound(self):
-        openAction = True
-        while(openAction):
+        print("betting round")
+        #TODO action counter, starting at len(players), resets after raising
+        self.actionCount = len(self.players)
+        while(self.actionCount > 0):
             for player in self.players:
-                lastRaise, playersPreviousAction, playersHandAction, playersRoundAction = self.calculatePreviousAction()
-
-                action, playerActionSpaceMax = self.calculatePlayerAction(lastRaise, player, playersPreviousAction, playersHandAction, playersRoundAction)
-
-                if(-2 <= action < -1):
-                    self.calls(lastRaise, player)
-                elif(-1 <= action < 0):
-                    self.folds(player)
-                elif(0 <= action <= playerActionSpaceMax):
-                    self.raises(action, player)
-                else:
-                    print("Error: invalid action")
-                    print(action)
-
+                if(len(self.players) == 1):
+                    self.actionCount = 0
+                    break
+                self.playerTurn(player)
 
     def playHand(self):
+        print("playing hand")
         if(len(self.players) > 3):
             self.calculateBlinds()
             self.dealPre()
             self.bettingRound()
 
-            while(not self.handEnded):
+            while(True):
                 self.pre = False
 
                 self.communityCards.append(self.deck.pop())
@@ -224,16 +239,20 @@ class pokerHand:
                 self.communityCards.append(self.deck.pop())
                 self.bettingRound()
                 if(len(self.players) == 1):
+                    winner = self.players[0]
                     break
 
                 self.communityCards.append(self.deck.pop())
                 self.bettingRound()
                 if(len(self.players) == 1):
+                    winner = self.players[0]
                     break
 
                 self.communityCards.append(self.deck.pop())
                 self.bettingRound()
                 if(len(self.players) == 1):
+                    winner = self.players[0]
                     break
-                self.showdown()
-            self.endHand()
+
+                winner = self.showdown()
+            self.endHand(winner)
