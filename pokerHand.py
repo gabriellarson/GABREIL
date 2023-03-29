@@ -142,14 +142,14 @@ class pokerHand:
         self.players.remove(player)
 
     def raises(self, action, player):
-        print(player.name, " raises ", action)
+        print(player.name, " raises ", player.chips - action)
         r = player.chips - action
         player.roundAction.append(r)
         player.chips -= r
         self.pot += r
 
     def calculatePlayerAction(self, lastRaise, player, playersPreviousAction, playersHandAction, playersRoundAction):
-        print("calulating player action")
+        #print("calulating player action")
         ceiling = 0 #ceiling will be the minimum raise
         if(self.pre):
             ceiling = lastRaise + self.BBsize
@@ -167,7 +167,7 @@ class pokerHand:
         return action, playerActionSpaceMax
     
     def calculatePreviousAction(self):
-        print("calculating previous action")
+        #print("calculating previous action")
         playersPreviousAction = []
         playersHandAction = []
         playersRoundAction = []
@@ -215,8 +215,9 @@ class pokerHand:
 
     def bettingRound(self):
         print("betting round")
-        #TODO action counter, starting at len(players), resets after raising
         self.actionCount = len(self.players)
+        actionPool = []
+        #TODO action pool, sidepots
         while(self.actionCount > 0):
             for player in self.players:
                 if(len(self.players) == 1):

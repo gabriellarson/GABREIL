@@ -1,4 +1,5 @@
 from pokerHand import pokerHand
+import copy
 
 class pokerGame:
 
@@ -16,21 +17,31 @@ class pokerGame:
     def play(self):
         BBsize = self.startingChips/100
         BBindex = 0
+        numHands = 0
         while(len(self.players) > 3):
             for hands in range(self.handsPerLevel):
-                ##BB index, SB index
+                if(len(self.players) <= 3):
+                    break
                 self.checkForLoser()
                 BBindex+=1
                 if(BBindex >= len(self.players)):
                     BBindex = 0
-                hand = pokerHand(self.deck, self.players, BBindex, BBsize, False)
+                
+                hand = pokerHand(self.deck, copy.copy(self.players), BBindex, BBsize, False)
                 hand.playHand()
-            BBsize *= 2
+                numHands+=1
+            BBsize *= 1.5
+
+        print(numHands)
+        print("Winner: " + self.players[0].name)
+        print("Winner: " + self.players[1].name)
+        print("Winner: " + self.players[2].name)
 
     def checkForLoser(self):
-        for player in self.players:
-            if(player.chips <= 0):
-                self.players.remove(player)
+        if(len(self.players) > 3):
+            for player in self.players:
+                if(player.chips <= 0):
+                        self.players.remove(player)
 
 
     
