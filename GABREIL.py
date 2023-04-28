@@ -1,28 +1,25 @@
-from pokerPlayer import pokerPlayer
-from learningPlayer import learningPlayer
-from pokerGame import pokerGame
+import gym
+from gym import spaces
+import clubs_gym
+
+from DQNAgent import DQN
 
 def main():
-    #state = np.array([2500, 250, 50])
-    state_size = 625000
+    env = gym.make("NoLimitHoldemNinePlayer-v0", disable_env_checker=True)
+    agents = [DQN(env) for _ in range(9)]
+    env.register_agents(agents)
 
-    #action space range is [0, 1]
-    action_size = 1
+    obs = env.reset()
 
-    #def __init__(self, name, state_size, action_size, learning_rate, tau):
-    #learningPlayer("DDPG nerd", state_size, action_size, .002, 0.005)
-    list = [pokerPlayer("Player1"),
-            pokerPlayer("Player2"),
-            pokerPlayer("Player3"),
-            pokerPlayer("Player4"),
-            pokerPlayer("Player5"),
-            pokerPlayer("Player6"),
-            pokerPlayer("Player7"),
-            pokerPlayer("Player8"),
-            pokerPlayer("Player9")]
+    for i in range(10):
+        while True:
+            bet = env.act(obs)
+            obs, rewards, done, info = env.step(bet)
 
-    game = pokerGame(list, 100, 20)
-    game.play()
+            if done:
+                print(rewards)
+                obs = env.reset()
+                break
 
 if __name__ == "__main__":
     main()
