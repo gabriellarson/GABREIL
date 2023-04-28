@@ -14,6 +14,7 @@ class pokerGame:
                     ,"Ac","2c","3c","4c","5c","6c","7c","8c","9c","Tc","Jc","Qc","Kc"
                     ,"Ah","2h","3h","4h","5h","6h","7h","8h","9h","Th","Jh","Qh","Kh"]
         
+
     def play(self):
         BBsize = self.startingChips/100
         BBindex = 0
@@ -26,22 +27,25 @@ class pokerGame:
                 BBindex+=1
                 if(BBindex >= len(self.players)):
                     BBindex = 0
+
+                logs = True
                 
-                hand = pokerHand(self.deck, copy.copy(self.players), BBindex, BBsize, False)
+                hand = pokerHand(copy.copy(self.deck), copy.copy(self.players), BBindex, BBsize, logs)
                 hand.playHand()
                 numHands+=1
-            BBsize *= 1.5
+            BBsize *= 5
 
         print(numHands)
         print("Winner: " + self.players[0].name)
         print("Winner: " + self.players[1].name)
         print("Winner: " + self.players[2].name)
 
+
     def checkForLoser(self):
         if(len(self.players) > 3):
             for player in self.players:
                 if(player.chips <= 0):
-                        self.players.remove(player)
+                    self.players.remove(player)
 
 
     

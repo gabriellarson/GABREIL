@@ -1,7 +1,6 @@
 from pokerPlayer import pokerPlayer
 from learningPlayer import learningPlayer
 from pokerGame import pokerGame
-import numpy as np
 
 def main():
     #state = np.array([2500, 250, 50])
