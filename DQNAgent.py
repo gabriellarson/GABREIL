@@ -8,6 +8,7 @@ from rl.agents import DQNAgent
 from rl.policy import EpsGreedyQPolicy
 from rl.memory import SequentialMemory
 
+
 class DQN(base.BaseAgent):
     def __init__(self, env):
         super().__init__()
@@ -32,55 +33,20 @@ class DQN(base.BaseAgent):
         self.agent.compile(Adam(lr=1e-3), metrics=['mae'])
 
     def act(self, obs):
-        # Preprocess the observation
-        processed_obs = process_observation(obs)
-
-        # Get the action from the agent
-        action = self.agent.forward(processed_obs)
+        action = self.agent.forward(obs)
 
         # Return the action as an integer
-        return np.argmax(action)
-
-
-
+        print("ACTION: ", action, ",OBS: ", obs)
+        return action
     
-def process_observation(obs):
-    def convert_to_numbers(value):
-        if isinstance(value, clubs.poker.card.Card):
-            return card_to_number(value)
-        else:
-            return value
+    def store_experience(self, action, reward, obs, done):
+        self.agent.memory.append(action, reward, obs, done)
 
-    processed_obs = []
-    for v in obs.values():
-        v = np.array(v)
-        v = np.vectorize(convert_to_numbers, otypes=[np.float])(v)
-        processed_obs.append(v.flatten())
+    def update(self, batch_size=32):
+        if self.agent.memory.nb_entries >= self.agent.nb_steps_warmup:
+            self.agent.replay(batch_size)
 
-    return np.concatenate(processed_obs)
+    def train(self, env, nb_steps):
+        self.agent.fit(env, nb_steps=nb_steps, visualize=False, verbose=0)
 
 
-def card_to_number(card):
-    return card_rank_values[card.rank] + 13 * card_suit_values[card.suit]
-card_suit_values = {
-    '♠': 0.0,
-    '♥': 1.0,
-    '♦': 2.0,
-    '♣': 3.0
-}
-        
-card_rank_values = {
-    'A': 1.0,
-    '2': 2.0,
-    '3': 3.0,
-    '4': 4.0,
-    '5': 5.0,
-    '6': 6.0,
-    '7': 7.0,
-    '8': 8.0,
-    '9': 9.0,
-    'T': 10.0,
-    'J': 11.0,
-    'Q': 12.0,
-    'K': 13.0
-}
