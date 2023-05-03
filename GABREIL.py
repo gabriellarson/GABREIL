@@ -1,26 +1,22 @@
+import os
 import gym
-from gym import spaces
 import clubs_gym
-
 import numpy as np
-
+import tensorflow as tf
+import matplotlib.pyplot as plt
 from envWrapper import envWrapper
-
 from DQNAgent import DQN
 
-import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
-import tensorflow as tf
 tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
 
-from copy import deepcopy
 
-import matplotlib.pyplot as plt
-
-def main():
+def create_env():
     env = gym.make("NoLimitHoldemNinePlayer-v0", disable_env_checker=True)
     env = envWrapper(env)
+    return env
 
+def register_agents(env):
     DQN1 = DQN(env)
     DQN2 = DQN(env)
     DQN3 = DQN(env)
@@ -34,20 +30,20 @@ def main():
     agents = [DQN1, DQN2, DQN3, DQN4, DQN5, DQN6, DQN7, DQN8, DQN9]
     env.register_agents(agents)
 
-    n_episodes = 1000000
+
+def main():
+    env = create_env()
+    register_agents(env)
+
+    n_episodes = 100000
     cumulative_rewards = np.zeros((n_episodes, 9))
 
     for episode in range(n_episodes):
-        #print("Episode", episode)
         episode_rewards = np.zeros(9)
         done = False
         actions = []
-        i = 0
         obs = env.reset(reset_stacks=True)
         while not done:
-            #print("NUMBER ", i, ", ", obs)
-            i += 1
-
             for agent in env.agents.values():
                 action = env.act(obs)
                 actions.append(action)
@@ -60,9 +56,8 @@ def main():
 
                 episode_rewards += rewards
 
-        #print("Episode rewards:", episode_rewards)
         cumulative_rewards[episode] = episode_rewards + cumulative_rewards[episode-1] if episode > 0 else episode_rewards
-        #print("Cumulative rewards:", cumulative_rewards[i])
+
     
     plt.title("Cumulative rewards")
     plt.xlabel("Episode")
