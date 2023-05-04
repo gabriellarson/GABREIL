@@ -12,7 +12,6 @@ from rl.memory import SequentialMemory
 class DQN(base.BaseAgent):
     def __init__(self, env):
         super().__init__()
-        self.reward_history = []
         self.action_size = env.action_space.n
         self.input_shape = (1,35)
 
@@ -21,7 +20,7 @@ class DQN(base.BaseAgent):
         model.add(Dense(64, activation='relu'))
         model.add(Dense(64, activation='relu'))
         model.add(Dense(64, activation='relu'))
-        model.add(Dense(self.action_size, activation='linear'))
+        model.add(Dense(self.action_size, activation='sigmoid'))
 
         memory = SequentialMemory(limit=100000, window_length=1)
         policy = EpsGreedyQPolicy(eps=0.1)
@@ -32,17 +31,15 @@ class DQN(base.BaseAgent):
 
     def act(self, obs):
         action = self.agent.forward(obs)
-
-        #print("ACTION: ", action, ",OBS: ", obs)
-        return action
+        #print("a ", action)
+        scaled_action = action * self.action_size
+        #print("c ", scaled_action)
+        return scaled_action
     
     def store_experience(self, action, reward, obs, done):
         self.agent.memory.append(action, reward, obs, done)
 
     def backward(self, rewards, terminal):
         self.agent.backward(rewards, terminal)
-
-    def train(self, env, nb_steps):
-        self.agent.fit(env, nb_steps=nb_steps, visualize=False, verbose=0)
 
 
