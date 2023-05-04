@@ -10,8 +10,11 @@ from rl.memory import SequentialMemory
 
 
 class DQN(base.BaseAgent):
-    def __init__(self, env):
+    def __init__(self, env, name):
         super().__init__()
+        self.name = name
+        self.color = 'red'
+        
         self.action_size = env.action_space.n
         self.input_shape = (1,35)
 
