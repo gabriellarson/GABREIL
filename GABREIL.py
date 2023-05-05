@@ -15,11 +15,11 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
 
 ####CONFIG####
-num_episodes = 10000
+num_episodes = 1000
 ddpg = True
 dqn = True
-sarsa = False
-cem = False
+sarsa = True
+cem = True
 ###############
 
 def create_env():
@@ -112,9 +112,6 @@ def create_agents(env):
     return agents
 
 def create_plots(rewards, agents):
-    #for agent in agents: #apply moving average smoothing
-        #cumrewards[agent.name] = np.convolve(cumrewards[agent.name], np.ones((1,)), mode='valid')
-    
     plt.title("Cumulative rewards, All Players")
     plt.xlabel("Episode")
     plt.ylabel("Cumulative reward")
@@ -164,7 +161,7 @@ def create_plots(rewards, agents):
             if(agent.name.startswith("CEM")):
                 cum_cem[i] += rewards[agent.name][i]
 
-    plt.title("Cumulative rewards, Average per Agent Type")
+    plt.title("Cumulative rewards, per Agent Type")
     plt.xlabel("Episode")
     plt.ylabel("Cumulative reward")
     if(ddpg):
