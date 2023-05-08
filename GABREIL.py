@@ -10,16 +10,18 @@ from SARSAAgent import SARSA
 from DDPGAgent import DDPG
 from DQNAgent import DQN
 from CEMAgent import CEM
+from RandomAgent import RandomAgent
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
 
 ####CONFIG####
-num_episodes = 1000
-ddpg = True
+num_episodes = 100000
+ddpg = False
 dqn = True
-sarsa = True
-cem = True
+sarsa = False
+cem = False
+random = True
 ###############
 
 def create_env():
@@ -109,6 +111,26 @@ def create_agents(env):
         agents.append(CEM8)
         agents.append(CEM9)
 
+    if(random):
+        RANDOM1 = RandomAgent(env, "RANDOM1")
+        RANDOM2 = RandomAgent(env, "RANDOM2")
+        RANDOM3 = RandomAgent(env, "RANDOM3")
+        RANDOM4 = RandomAgent(env, "RANDOM4")
+        RANDOM5 = RandomAgent(env, "RANDOM5")
+        RANDOM6 = RandomAgent(env, "RANDOM6")
+        RANDOM7 = RandomAgent(env, "RANDOM7")
+        RANDOM8 = RandomAgent(env, "RANDOM8")
+        RANDOM9 = RandomAgent(env, "RANDOM9")
+        agents.append(RANDOM1)
+        agents.append(RANDOM2)
+        agents.append(RANDOM3)
+        agents.append(RANDOM4)
+        agents.append(RANDOM5)
+        agents.append(RANDOM6)
+        agents.append(RANDOM7)
+        agents.append(RANDOM8)
+        agents.append(RANDOM9)
+
     return agents
 
 def create_plots(rewards, agents):
@@ -130,6 +152,8 @@ def create_plots(rewards, agents):
     min_sarsa = num_episodes
     max_cem = 0
     min_cem = num_episodes
+    max_random = 0
+    min_random = num_episodes
     max_length = 0
     min_length = num_episodes
     for agent in agents:
@@ -142,6 +166,8 @@ def create_plots(rewards, agents):
             min_sarsa = length
         if(agent.name.startswith("CEM") and length < min_cem):
             min_cem = length
+        if(agent.name.startswith("RANDOM") and length < min_random):
+            min_random = length
         if (length < min_length):
             min_length = length
 
@@ -149,6 +175,7 @@ def create_plots(rewards, agents):
     cum_dqn = np.zeros(min_length)
     cum_sarsa = np.zeros(min_length)
     cum_cem = np.zeros(min_length)
+    cum_random = np.zeros(min_length)
 
     for agent in agents:
         for i in range(min_length):
@@ -160,6 +187,8 @@ def create_plots(rewards, agents):
                 cum_sarsa[i] += rewards[agent.name][i]
             if(agent.name.startswith("CEM")):
                 cum_cem[i] += rewards[agent.name][i]
+            if(agent.name.startswith("RANDOM")):
+                cum_random[i] += rewards[agent.name][i]
 
     plt.title("Cumulative rewards, per Agent Type")
     plt.xlabel("Episode")
@@ -172,12 +201,15 @@ def create_plots(rewards, agents):
         plt.plot(cum_sarsa, label = "SARSA", color="orange")
     if(cem):
         plt.plot(cum_cem, label = "CEM", color="green")
+    if(random):
+        plt.plot(cum_random, label = "RANDOM", color="purple")
     plt.legend()
     plt.show()
 
 def main():
     env = create_env()
     agents = create_agents(env)
+
 
     n_episodes = num_episodes
     cum_rewards = {}
