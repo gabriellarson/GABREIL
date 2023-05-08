@@ -5,28 +5,28 @@ import clubs_gym
 import numpy as np
 import tensorflow as tf
 import matplotlib.pyplot as plt
-from envWrapper import envWrapper
-from SARSAAgent import SARSA
-from DDPGAgent import DDPG
-from DQNAgent import DQN
-from CEMAgent import CEM
 from RandomAgent import RandomAgent
+from env_wrapper import env_wrapper
+from SARSA_agent import SARSA
+from DDPG_agent import DDPG
+from DQN_agent import DQN
+from CEM_agent import CEM
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
 
 ####CONFIG####
-num_episodes = 100000
-ddpg = False
+num_episodes = 10000
+ddpg = True
 dqn = True
-sarsa = False
-cem = False
+sarsa = True
+cem = True
 random = True
 ###############
 
 def create_env():
     env = gym.make("NoLimitHoldemNinePlayer-v0", disable_env_checker=True)
-    env = envWrapper(env)
+    env = env_wrapper(env)
     return env
 
 def create_agents(env):

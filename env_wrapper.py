@@ -6,9 +6,9 @@ import tempfile
 from keras.models import load_model
 import pickle
 
-class envWrapper(gym.Wrapper):
+class env_wrapper(gym.Wrapper):
     def __init__(self, env):
-        super(envWrapper, self).__init__(env)
+        super(env_wrapper, self).__init__(env)
 
     def step(self, action):
         obs, reward, done, info = self.env.step(action)
